@@ -8,4 +8,4 @@
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
-  
+  # Aureo_agencia_v2 git init git add dist git commit -m se agrego carpeta dist git branch -M main git remote add origin https://github.com/julianclavijo19/Aureo_agencia_v2.git git push -u origin main

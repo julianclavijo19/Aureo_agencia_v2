@@ -1,0 +1,1 @@
+import{a as r}from"./react-vendor-CVdYNB31.js";import{ap as t}from"./motion-BDAO4vxi.js";function o(o,{root:n,margin:e,amount:a,once:i=!1,initial:u=!1}={}){const[c,m]=r.useState(u);return r.useEffect(()=>{if(!o.current||i&&c)return;const r={root:n&&n.current||void 0,margin:e,amount:a};return t(o.current,()=>(m(!0),i?void 0:()=>m(!1)),r)},[n,o,e,i,a]),c}export{o as u};

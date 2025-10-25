@@ -20,22 +20,28 @@ export const Contact = memo(() => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ Corregido: función de envío segura con manejo de respuestas vacías
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       setIsSubmitting(true);
 
       try {
-        const n8nWebhookUrl =
-          (import.meta as any).env?.VITE_N8N_WEBHOOK_URL ||
-          'https://julian454k.app.n8n.cloud/webhook/formulario-contacto';
+        // URL del webhook de n8n
+        const n8nWebhookUrl = 'https://julian454k.app.n8n.cloud/webhook/formulario-contacto';
+
+        console.log('📤 Enviando datos a n8n:', {
+          nombre_completo: formData.name,
+          correo_electronico: formData.email,
+          numero_telefono: formData.phone,
+          nombre_empresa: formData.company,
+          proyecto: formData.message,
+        });
 
         const response = await fetch(n8nWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json',
+            'Accept': 'application/json',
           },
           body: JSON.stringify({
             nombre_completo: formData.name,
@@ -46,21 +52,35 @@ export const Contact = memo(() => {
           }),
         });
 
-        // ✅ Leemos la respuesta de manera segura
+        console.log('📥 Respuesta de n8n:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok
+        });
+
+        // Leer la respuesta
         const text = await response.text();
-        console.log('Respuesta cruda de n8n:', text);
+        console.log('📄 Respuesta cruda:', text);
 
         let result: any = {};
-        try {
-          result = text ? JSON.parse(text) : {};
-        } catch {
-          console.warn('Respuesta no es JSON válido:', text);
+        
+        // Intentar parsear como JSON
+        if (text) {
+          try {
+            result = JSON.parse(text);
+            console.log('✅ JSON parseado:', result);
+          } catch (parseError) {
+            console.warn('⚠️ No es JSON válido, usando respuesta de texto');
+          }
         }
 
-        const isSuccess = result.status === 'ok' || result.success === true;
+        // Verificar éxito
+        const isSuccess = response.ok || result.status === 'ok' || result.success === true;
 
-        if (response.ok && isSuccess) {
-          toast.success(result.message || '¡Mensaje enviado correctamente!');
+        if (isSuccess) {
+          toast.success(result.message || '¡Gracias! Tu mensaje ha sido enviado correctamente. 🎉');
+          
+          // Limpiar formulario
           setFormData({
             name: '',
             email: '',
@@ -69,11 +89,11 @@ export const Contact = memo(() => {
             message: '',
           });
         } else {
-          console.error('Error en la respuesta de n8n:', result);
-          throw new Error(result.message || 'Error al enviar el mensaje');
+          console.error('❌ Error en la respuesta:', result);
+          throw new Error(result.error || result.message || 'Error al enviar el mensaje');
         }
       } catch (error) {
-        console.error('Error general:', error);
+        console.error('💥 Error general:', error);
         toast.error('Hubo un error al enviar el mensaje. Por favor, intenta de nuevo.');
       } finally {
         setIsSubmitting(false);
@@ -82,7 +102,7 @@ export const Contact = memo(() => {
     [formData]
   );
 
-  // ✅ Formateo de número de teléfono (Colombia)
+  // Formateo de número de teléfono (Colombia)
   const formatPhoneNumber = useCallback((value: string) => {
     const cleaned = value.replace(/[^\d+]/g, '');
     let digits = cleaned.replace(/^\+?57/, '');
@@ -94,7 +114,6 @@ export const Contact = memo(() => {
     return `+57 ${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
   }, []);
 
-  // ✅ Actualización de los campos del formulario
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
@@ -221,7 +240,7 @@ export const Contact = memo(() => {
               <div className="grid sm:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="phone" className="block text-gray-700 dark:text-gray-300 mb-2">
-                    Teléfono
+                    Teléfono *
                   </label>
                   <Input
                     id="phone"
@@ -229,6 +248,7 @@ export const Contact = memo(() => {
                     type="tel"
                     value={formData.phone}
                     onChange={handleChange}
+                    required
                     placeholder="+57 300-000-0000"
                     className="w-full bg-white/50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:border-blue-500 rounded-xl"
                   />
@@ -236,13 +256,14 @@ export const Contact = memo(() => {
 
                 <div>
                   <label htmlFor="company" className="block text-gray-700 dark:text-gray-300 mb-2">
-                    Nombre de tu empresa
+                    Nombre de tu empresa *
                   </label>
                   <Input
                     id="company"
                     name="company"
                     value={formData.company}
                     onChange={handleChange}
+                    required
                     placeholder="Nombre de tu empresa"
                     className="w-full bg-white/50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:border-blue-500 rounded-xl"
                   />
@@ -251,7 +272,7 @@ export const Contact = memo(() => {
 
               <div>
                 <label htmlFor="message" className="block text-gray-700 dark:text-gray-300 mb-2">
-                  Mensaje *
+                  Cuéntanos sobre tu proyecto *
                 </label>
                 <Textarea
                   id="message"
@@ -259,7 +280,7 @@ export const Contact = memo(() => {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  placeholder="Cuéntanos sobre tu proyecto..."
+                  placeholder="Describe tu proyecto, objetivos y cómo podemos ayudarte..."
                   className="w-full min-h-[180px] bg-white/50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 focus:border-blue-500 rounded-xl resize-none"
                 />
               </div>
@@ -340,13 +361,16 @@ export const Contact = memo(() => {
                 <p className="text-blue-100 mb-6">
                   Agenda una reunión con nuestro equipo y descubre cómo podemos ayudarte.
                 </p>
-                <motion.button
-                  className="px-6 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-colors"
+                <motion.a
+                  href="https://wa.me/573209392035?text=Hola%2C%20quiero%20agendar%20una%20reuni%C3%B3n"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block px-6 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   Agendar reunión
-                </motion.button>
+                </motion.a>
               </div>
             </motion.div>
           </motion.div>

@@ -41,7 +41,7 @@ export const Portfolio = memo(() => {
   }, [navigate]);
 
   return (
-    <section id="portfolio" className="py-32 bg-white dark:bg-slate-950 overflow-hidden">
+    <section id="portfolio" className="py-32 bg-white dark:bg-slate-950 overflow-hidden" style={{ contain: 'paint' }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -66,32 +66,30 @@ export const Portfolio = memo(() => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 auto-rows-fr">
           {projects.map((project, index) => (
             <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
+              key={project.slug}
+              initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               onClick={() => handleProjectClick(project.slug)}
               className="group cursor-pointer flex"
+              style={{ willChange: isInView ? 'auto' : 'transform, opacity' }}
             >
-              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-500 flex flex-col w-full">
+              <div className="relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col w-full">
                 {/* Image */}
                 <div className="relative h-80 overflow-hidden flex-shrink-0">
                   <ImageWithFallback
                     src={project.image}
                     alt={project.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                   
                   {/* Gradient overlay */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-0 group-hover:opacity-30 transition-opacity duration-500`} />
                   
                   {/* Hover icon */}
-                  <motion.div
-                    className="absolute top-4 right-4 w-10 h-10 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    whileHover={{ scale: 1.1, rotate: 45 }}
-                  >
+                  <div className="absolute top-4 right-4 w-10 h-10 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110 group-hover:rotate-45">
                     <ArrowUpRight className="text-gray-900 dark:text-white" size={20} />
-                  </motion.div>
+                  </div>
                 </div>
 
                 {/* Content */}

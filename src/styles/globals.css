@@ -133,11 +133,29 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Performance optimizations */
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern' 1;
+    font-kerning: normal;
   }
 
   /* Optimize animations and transitions */
   * {
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* GPU acceleration for transforms */
+  img,
+  video,
+  iframe {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
+  /* Optimize images */
+  img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 
   /* Improve paint performance for animated elements */
@@ -146,10 +164,15 @@
     will-change: transform, opacity;
   }
 
-  /* Remove will-change after animation completes */
+  /* Remove will-change after animation completes to save memory */
   @media (prefers-reduced-motion: no-preference) {
     [class*="animate-"]:not(:hover):not(:focus):not(:active) {
       animation-play-state: running;
+    }
+    
+    /* Reset will-change after animations */
+    [class*="animate-"]:not(:hover):not(:active) {
+      will-change: auto;
     }
   }
 
@@ -163,6 +186,20 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+
+  /* Optimize blur effects for better performance */
+  [class*="blur-"] {
+    -webkit-backdrop-filter: blur(var(--tw-blur));
+    backdrop-filter: blur(var(--tw-blur));
+    transform: translateZ(0);
+  }
+
+  /* Optimize fixed/sticky elements */
+  [class*="fixed"],
+  [class*="sticky"] {
+    backface-visibility: hidden;
+    will-change: transform;
   }
 }
 

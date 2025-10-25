@@ -1,6 +1,6 @@
-import { memo, useRef, useCallback } from 'react';
+import React, { memo, useRef, useCallback, useMemo } from 'react';
 import { Megaphone, Palette, BarChart3, Video, Globe, MessageCircle } from 'lucide-react';
-import { motion, useInView } from 'motion/react';
+import { motion, useInView, useReducedMotion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 
 const services = [
@@ -52,41 +52,55 @@ export const Services = memo(() => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.1 });
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
 
   const handleServiceClick = useCallback((slug: string) => {
     navigate(`/servicio/${slug}`);
   }, [navigate]);
 
+  // Memoize animations configuration
+  const orbAnimation1 = useMemo(() => prefersReducedMotion ? {} : {
+    scale: [1, 1.1, 1],
+    opacity: [0.2, 0.4, 0.2],
+  }, [prefersReducedMotion]);
+
+  const orbAnimation2 = useMemo(() => prefersReducedMotion ? {} : {
+    scale: [1, 1.15, 1],
+    opacity: [0.2, 0.4, 0.2],
+  }, [prefersReducedMotion]);
+
   return (
-    <section id="services" className="relative py-32 overflow-hidden bg-white dark:bg-slate-950">
+    <section id="services" className="relative py-32 overflow-hidden bg-white dark:bg-slate-950" style={{ contain: 'paint' }}>
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-50/30 to-transparent dark:from-transparent dark:via-blue-900/10 dark:to-transparent" />
       
-      {/* Decorative elements */}
-      <motion.div
-        className="absolute top-20 right-10 w-72 h-72 bg-blue-200/30 dark:bg-blue-900/20 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="absolute bottom-20 left-10 w-96 h-96 bg-indigo-200/30 dark:bg-indigo-900/20 rounded-full blur-3xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{
-          duration: 10,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
+      {/* Decorative elements - optimized */}
+      {!prefersReducedMotion && (
+        <>
+          <motion.div
+            className="absolute top-20 right-10 w-72 h-72 bg-blue-200/20 dark:bg-blue-900/15 rounded-full blur-3xl"
+            style={{ willChange: 'transform, opacity' }}
+            animate={orbAnimation1}
+            transition={{
+              duration: 12,
+              repeat: Infinity,
+              ease: "easeInOut",
+              repeatType: "reverse"
+            }}
+          />
+          <motion.div
+            className="absolute bottom-20 left-10 w-96 h-96 bg-indigo-200/20 dark:bg-indigo-900/15 rounded-full blur-3xl"
+            style={{ willChange: 'transform, opacity' }}
+            animate={orbAnimation2}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              ease: "easeInOut",
+              repeatType: "reverse"
+            }}
+          />
+        </>
+      )}
 
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8" ref={ref}>
         <motion.div
@@ -114,29 +128,27 @@ export const Services = memo(() => {
             const Icon = service.icon;
             return (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
+                key={service.slug}
+                initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
                 onClick={() => handleServiceClick(service.slug)}
                 className="group relative cursor-pointer"
+                style={{ willChange: isInView ? 'auto' : 'transform, opacity' }}
               >
                 {/* Card with glassmorphism effect */}
-                <div className="relative h-full p-8 bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-3xl shadow-lg dark:shadow-slate-950/50 hover:shadow-2xl dark:hover:shadow-slate-950 transition-all duration-500 border border-white/50 dark:border-slate-800/50">
+                <div className="relative h-full p-8 bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm rounded-3xl shadow-lg dark:shadow-slate-950/50 hover:shadow-2xl dark:hover:shadow-slate-950 transition-all duration-300 border border-white/50 dark:border-slate-800/50 hover:-translate-y-2">
                   {/* Gradient glow on hover */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-10 rounded-3xl transition-opacity duration-500`} />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-10 rounded-3xl transition-opacity duration-300`} />
                   
                   {/* Icon */}
-                  <motion.div
-                    className={`relative w-16 h-16 bg-gradient-to-br ${service.gradient} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.3 }}
+                  <div
+                    className={`relative w-16 h-16 bg-gradient-to-br ${service.gradient} rounded-2xl flex items-center justify-center mb-6 shadow-lg transition-transform duration-300 group-hover:scale-110`}
                   >
                     <Icon className="text-white" size={32} />
-                  </motion.div>
+                  </div>
                   
-                  <h3 className="text-gray-900 dark:text-white mb-4 relative">
+                  <h3 className="text-gray-900 dark:text-white mb-4 relative text-xl font-semibold">
                     {service.title}
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed relative">
@@ -144,17 +156,13 @@ export const Services = memo(() => {
                   </p>
 
                   {/* Hover arrow */}
-                  <motion.div
-                    className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    initial={{ x: -10 }}
-                    whileHover={{ x: 0 }}
-                  >
+                  <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-0 -translate-x-2">
                     <div className={`w-8 h-8 bg-gradient-to-br ${service.gradient} rounded-full flex items-center justify-center`}>
                       <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
-                  </motion.div>
+                  </div>
                 </div>
               </motion.div>
             );

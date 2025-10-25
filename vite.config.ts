@@ -53,11 +53,51 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-    outDir: 'dist', // ✅ CAMBIADO para GitHub Pages
+    outDir: 'dist',
+    // Optimizaciones para mejor rendimiento
+    minify: 'terser',
+    cssMinify: true,
+    terserOptions: {
+      compress: {
+        drop_console: true, // Elimina console.logs en producción
+        drop_debugger: true,
+      },
+    },
+    // Code splitting optimizado
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separa las dependencias grandes en chunks individuales
+          'motion': ['motion'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'radix-ui': [
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-navigation-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tooltip',
+          ],
+          'icons': ['lucide-react'],
+        },
+      },
+    },
+    // Optimizaciones de chunk size
+    chunkSizeWarningLimit: 1000,
   },
+  // Optimizaciones de desarrollo
   server: {
     port: 3000,
     open: true,
+    // Optimizaciones para mejor HMR
+    hmr: {
+      overlay: true,
+    },
   },
-  base: './', // ✅ IMPORTANTE para que funcione correctamente en GitHub Pages
+  // Optimizaciones generales
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'motion'],
+    exclude: ['@vercel/analytics'],
+  },
+  base: './',
 });

@@ -1,0 +1,308 @@
+{
+  "name": "Flujo Formulario Web - Aureo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS, GET"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "c657d65d-e34f-4e48-9649-1669cfaba023",
+      "name": "Webhook Formulario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        128
+      ],
+      "webhookId": "formulario-contacto"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.headers['content-type'] }}",
+              "operation": "contains",
+              "value2": "application/json"
+            }
+          ]
+        }
+      },
+      "id": "58758054-b45a-4908-a11f-f42e95b76039",
+      "name": "Validar Request",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "aureoagenciadigital@gmail.com",
+        "toEmail": "={{ $json.body.correo_electronico }}",
+        "subject": "¡Gracias por contactar a Aureo! 🎉",
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f4f6f9; }\n    .container { max-width: 600px; margin: 40px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }\n    .header { background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 40px 30px; text-align: center; }\n    .header h1 { color: white; font-size: 28px; margin-bottom: 10px; }\n    .header p { color: rgba(255,255,255,0.9); font-size: 16px; }\n    .content { padding: 40px 30px; }\n    .greeting { font-size: 18px; color: #1f2937; margin-bottom: 20px; }\n    .highlight-name { color: #2563eb; font-weight: bold; }\n    .info-box { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid #2563eb; padding: 20px; border-radius: 8px; margin: 25px 0; }\n    .info-box h3 { color: #1e40af; margin-bottom: 15px; font-size: 16px; }\n    .info-item { margin: 10px 0; padding: 8px 0; border-bottom: 1px solid rgba(37, 99, 235, 0.1); }\n    .info-item:last-child { border-bottom: none; }\n    .info-label { font-weight: 600; color: #4b5563; display: inline-block; min-width: 100px; }\n    .info-value { color: #1f2937; }\n    .message-box { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb; }\n    .message-box strong { color: #2563eb; display: block; margin-bottom: 10px; }\n    .message-text { color: #4b5563; line-height: 1.8; white-space: pre-line; }\n    .timeline { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #f59e0b; }\n    .timeline-icon { font-size: 24px; margin-bottom: 10px; }\n    .timeline-text { color: #92400e; font-size: 15px; line-height: 1.6; }\n    .cta-section { text-align: center; margin: 30px 0; }\n    .cta-button { display: inline-block; background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 10px; font-weight: 600; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: transform 0.2s; }\n    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4); }\n    .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }\n    .footer-text { color: #6b7280; font-size: 14px; margin-bottom: 15px; }\n    .social-links { margin: 20px 0; }\n    .social-links a { display: inline-block; margin: 0 10px; color: #2563eb; text-decoration: none; font-size: 14px; }\n    .divider { height: 1px; background: linear-gradient(90deg, transparent, #e5e7eb, transparent); margin: 30px 0; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>✨ ¡Gracias por contactarnos!</h1>\n      <p>Tu mensaje ha sido recibido exitosamente</p>\n    </div>\n    \n    <div class=\"content\">\n      <p class=\"greeting\">\n        Hola <span class=\"highlight-name\">{{ $json.body.nombre_completo }}</span>,\n      </p>\n      \n      <p style=\"color: #4b5563; margin-bottom: 25px; line-height: 1.8;\">\n        ¡Estamos emocionados de saber de ti! Hemos recibido tu mensaje y nuestro equipo lo está revisando en este momento.\n      </p>\n      \n      <div class=\"info-box\">\n        <h3>📋 Resumen de tu solicitud</h3>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Empresa:</span>\n          <span class=\"info-value\">{{ $json.body.nombre_empresa }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Email:</span>\n          <span class=\"info-value\">{{ $json.body.correo_electronico }}</span>\n        </div>\n        <div class=\"info-item\">\n          <span class=\"info-label\">Teléfono:</span>\n          <span class=\"info-value\">{{ $json.body.numero_telefono }}</span>\n        </div>\n      </div>\n      \n      <div class=\"message-box\">\n        <strong>Tu mensaje:</strong>\n        <div class=\"message-text\">{{ $json.body.proyecto }}</div>\n      </div>\n      \n      <div class=\"timeline\">\n        <div class=\"timeline-icon\">⏰</div>\n        <div class=\"timeline-text\">\n          <strong style=\"color: #92400e; display: block; margin-bottom: 8px;\">¿Qué sigue?</strong>\n          Nuestro equipo analizará tu proyecto y nos pondremos en contacto contigo en las próximas <strong>24-48 horas hábiles</strong> para discutir cómo podemos ayudarte a alcanzar tus objetivos.\n        </div>\n      </div>\n      \n      <div class=\"divider\"></div>\n      \n      <p style=\"color: #4b5563; text-align: center; margin: 25px 0;\">\n        ¿Tienes alguna pregunta urgente?<br>\n        No dudes en contactarnos directamente:\n      </p>\n      \n      <div class=\"cta-section\">\n        <a href=\"https://wa.me/573209392035\" class=\"cta-button\">💬 Escríbenos por WhatsApp</a>\n      </div>\n      \n      <p style=\"color: #6b7280; text-align: center; margin-top: 30px; font-size: 15px;\">\n        Gracias por confiar en nosotros,<br>\n        <strong style=\"color: #2563eb;\">El equipo de Aureo</strong> 🚀\n      </p>\n    </div>\n    \n    <div class=\"footer\">\n      <p class=\"footer-text\">\n        <strong>Aureo - Agencia Digital</strong><br>\n        Bogotá, Colombia | 320 9392035<br>\n        aureoagenciadigital@gmail.com\n      </p>\n      <div class=\"social-links\">\n        <a href=\"mailto:aureoagenciadigital@gmail.com\">📧 Email</a>\n        <a href=\"https://wa.me/573209392035\">💬 WhatsApp</a>\n      </div>\n      <p style=\"color: #9ca3af; font-size: 12px; margin-top: 20px;\">\n        Este es un correo automático. Por favor no respondas directamente a este mensaje.\n      </p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "83293699-7d95-4e6d-8ba1-60a92ae3780b",
+      "name": "Email al Cliente",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        -320
+      ],
+      "webhookId": "b146ac6c-8f3d-4ab9-b12c-34cd5ecdcae4"
+    },
+    {
+      "parameters": {
+        "fromEmail": "aureoagenciadigital@gmail.com",
+        "toEmail": "aureoagenciadigital@gmail.com",
+        "subject": "🔔 Nuevo Lead - {{ $json.body.nombre_completo }}",
+        "html": "<!DOCTYPE html>\n<html lang=\"es\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <style>\n    * { margin: 0; padding: 0; box-sizing: border-box; }\n    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937; }\n    .container { max-width: 650px; margin: 30px auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }\n    .header { background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); padding: 35px 30px; color: white; }\n    .header h1 { font-size: 26px; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }\n    .header .emoji { font-size: 32px; }\n    .header p { opacity: 0.95; font-size: 15px; }\n    .timestamp { background: rgba(255,255,255,0.2); display: inline-block; padding: 6px 14px; border-radius: 6px; font-size: 13px; margin-top: 15px; }\n    .content { padding: 35px 30px; }\n    .priority-badge { display: inline-block; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 25px; }\n    .section { margin-bottom: 30px; }\n    .section-title { color: #4f46e5; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }\n    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }\n    .info-card { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #0284c7; padding: 18px; border-radius: 10px; }\n    .info-card.empresa { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left-color: #f59e0b; }\n    .info-card.telefono { background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%); border-left-color: #10b981; }\n    .info-card.email { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left-color: #ec4899; }\n    .info-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; font-weight: 600; }\n    .info-value { color: #1e293b; font-size: 16px; font-weight: 600; word-break: break-word; }\n    .proyecto-box { background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); padding: 25px; border-radius: 12px; border: 2px solid #a78bfa; margin-top: 20px; }\n    .proyecto-box h3 { color: #6d28d9; margin-bottom: 15px; font-size: 16px; }\n    .proyecto-text { color: #4c1d95; line-height: 1.8; white-space: pre-line; background: white; padding: 15px; border-radius: 8px; }\n    .actions { background: #f9fafb; padding: 25px; border-radius: 12px; border: 2px dashed #e5e7eb; text-align: center; margin-top: 30px; }\n    .actions h3 { color: #374151; margin-bottom: 20px; font-size: 16px; }\n    .action-buttons { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }\n    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; transition: transform 0.2s, box-shadow 0.2s; }\n    .btn:hover { transform: translateY(-2px); }\n    .btn-whatsapp { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }\n    .btn-email { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }\n    .btn-phone { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); }\n    .footer { background: #1f2937; color: #9ca3af; padding: 25px 30px; text-align: center; font-size: 13px; }\n    .footer strong { color: #e5e7eb; }\n    @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } .action-buttons { flex-direction: column; } }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1><span class=\"emoji\">🎯</span> Nuevo Lead Recibido</h1>\n      <p>Un cliente potencial está interesado en tus servicios</p>\n      <div class=\"timestamp\">⏰ {{ $now.format('DD/MM/YYYY - HH:mm:ss') }}</div>\n    </div>\n    \n    <div class=\"content\">\n      <div class=\"priority-badge\">⚡ ACCIÓN REQUERIDA</div>\n      \n      <div class=\"section\">\n        <div class=\"section-title\">\n          <span>👤</span> INFORMACIÓN DEL CLIENTE\n        </div>\n        <div class=\"info-grid\">\n          <div class=\"info-card\">\n            <div class=\"info-label\">Nombre Completo</div>\n            <div class=\"info-value\">{{ $json.body.nombre_completo }}</div>\n          </div>\n          <div class=\"info-card empresa\">\n            <div class=\"info-label\">Empresa</div>\n            <div class=\"info-value\">{{ $json.body.nombre_empresa }}</div>\n          </div>\n          <div class=\"info-card telefono\">\n            <div class=\"info-label\">📱 Teléfono</div>\n            <div class=\"info-value\">{{ $json.body.numero_telefono }}</div>\n          </div>\n          <div class=\"info-card email\">\n            <div class=\"info-label\">📧 Email</div>\n            <div class=\"info-value\">{{ $json.body.correo_electronico }}</div>\n          </div>\n        </div>\n      </div>\n      \n      <div class=\"proyecto-box\">\n        <h3>💼 DESCRIPCIÓN DEL PROYECTO</h3>\n        <div class=\"proyecto-text\">{{ $json.body.proyecto }}</div>\n      </div>\n      \n      <div class=\"actions\">\n        <h3>🚀 ACCIONES RÁPIDAS</h3>\n        <div class=\"action-buttons\">\n          <a href=\"https://wa.me/{{ $json.body.numero_telefono.replace(/[^0-9]/g, '') }}?text=Hola%20{{ $json.body.nombre_completo }}%2C%20soy%20de%20Aureo.%20Recib%C3%AD%20tu%20mensaje%20sobre%20tu%20proyecto.\" class=\"btn btn-whatsapp\">\n            💬 WhatsApp\n          </a>\n          <a href=\"mailto:{{ $json.body.correo_electronico }}?subject=Re:%20Tu%20consulta%20en%20Aureo&body=Hola%20{{ $json.body.nombre_completo }}%2C%0A%0AGracias%20por%20contactarnos...\" class=\"btn btn-email\">\n            📧 Enviar Email\n          </a>\n          <a href=\"tel:{{ $json.body.numero_telefono.replace(/[^0-9]/g, '') }}\" class=\"btn btn-phone\">\n            📞 Llamar\n          </a>\n        </div>\n      </div>\n    </div>\n    \n    <div class=\"footer\">\n      <strong>Sistema de Notificaciones - Aureo</strong><br>\n      Este correo fue generado automáticamente por tu flujo de trabajo en n8n\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "4f787ae9-b088-45bd-9b3a-ecadff6d8c09",
+      "name": "Email a la Dueña",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        304,
+        -112
+      ],
+      "webhookId": "2fbc6a0d-18d0-4d6b-9508-c6260950b0d7"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "TU_ID_DE_GOOGLE_SHEET",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha y Hora": "={{ $now.format('DD/MM/YYYY HH:mm:ss') }}",
+            "Nombre Completo": "={{ $json.body.nombre_completo }}",
+            "Teléfono": "={{ $json.body.numero_telefono }}",
+            "Email": "={{ $json.body.correo_electronico }}",
+            "Empresa": "={{ $json.body.nombre_empresa }}",
+            "Proyecto": "={{ $json.body.proyecto }}",
+            "Estado": "Nuevo"
+          }
+        },
+        "options": {}
+      },
+      "id": "842c7397-f7f7-4118-a62f-759384dcc15d",
+      "name": "Guardar en Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        304,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"¡Gracias por contactarnos! Tu mensaje ha sido recibido correctamente.\",\n  \"data\": {\n    \"nombre\": $json.body.nombre_completo,\n    \"email\": $json.body.correo_electronico,\n    \"timestamp\": $now.format('DD/MM/YYYY HH:mm:ss')\n  }\n} }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "2fcbe2c0-85ce-4a5c-9b56-10df8bec41e0",
+      "name": "Respuesta al Formulario",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Error: Formato de datos inválido",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "bad5d33e-815f-44f0-a691-7998c472ea02",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        304,
+        608
+      ],
+      "id": "c2036ae4-bbd7-4719-8c45-4975f9c739fe",
+      "name": "Send message",
+      "webhookId": "536161a9-1cf9-4032-a048-11ec909bc8d3"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Formulario": {
+      "main": [
+        [
+          {
+            "node": "Validar Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Request": {
+      "main": [
+        [
+          {
+            "node": "Email al Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email a la Dueña",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar en Google Sheets",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respuesta al Formulario",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email al Cliente": {
+      "main": [
+        [
+          {
+            "node": "Respuesta al Formulario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email a la Dueña": {
+      "main": [
+        [
+          {
+            "node": "Respuesta al Formulario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar en Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Respuesta al Formulario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message": {
+      "main": [
+        [
+          {
+            "node": "Respuesta al Formulario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2c756a69-a54f-4f16-8a96-16d7fcb97c4d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f40738fb2431bb69e95d0c7a307c23b8e372d4c92986ea2401d6d637a4bd057c"
+  },
+  "id": "cmsJe9af6wkCf3Jp",
+  "tags": []
+}

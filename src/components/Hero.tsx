@@ -1,32 +1,37 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { ArrowRight, Play } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import logo from 'figma:asset/c30b11fbcf925ad453cd5748a695af7b59adbc19.png';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
-// Memoized animation variants for better performance
-const orbAnimationVariants = {
-  blue: {
-    scale: [1, 1.2, 1],
-    x: [0, 100, 0],
-    y: [0, 50, 0],
+// Optimized animation variants - reduced motion for better performance
+const getOrbAnimationVariants = (prefersReducedMotion: boolean) => ({
+  blue: prefersReducedMotion ? {} : {
+    scale: [1, 1.1, 1],
+    x: [0, 50, 0],
+    y: [0, 25, 0],
   },
-  indigo: {
-    scale: [1, 1.3, 1],
-    x: [0, -100, 0],
-    y: [0, -50, 0],
+  indigo: prefersReducedMotion ? {} : {
+    scale: [1, 1.15, 1],
+    x: [0, -50, 0],
+    y: [0, -25, 0],
   }
-};
+});
 
-const logoGlowVariants = {
-  scale: [1, 1.2, 1],
-};
+const getLogoGlowVariants = (prefersReducedMotion: boolean) => 
+  prefersReducedMotion ? {} : { scale: [1, 1.1, 1] };
 
-const logoFloatVariants = {
-  y: [0, -8, 0],
-};
+const getLogoFloatVariants = (prefersReducedMotion: boolean) => 
+  prefersReducedMotion ? {} : { y: [0, -6, 0] };
 
 export const Hero = memo(() => {
+  const prefersReducedMotion = useReducedMotion();
+  
+  // Memoize animation variants
+  const orbVariants = useMemo(() => getOrbAnimationVariants(prefersReducedMotion), [prefersReducedMotion]);
+  const logoGlow = useMemo(() => getLogoGlowVariants(prefersReducedMotion), [prefersReducedMotion]);
+  const logoFloat = useMemo(() => getLogoFloatVariants(prefersReducedMotion), [prefersReducedMotion]);
+  
   const scrollToContact = useCallback(() => {
     const element = document.getElementById('contact');
     if (element) {
@@ -59,6 +64,7 @@ export const Hero = memo(() => {
     <section
       id="hero"
       className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-950"
+      style={{ contain: 'paint' }}
     >
       {/* Background image with overlay */}
       <div className="absolute inset-0">
@@ -66,29 +72,38 @@ export const Hero = memo(() => {
           src="https://images.unsplash.com/photo-1557672172-298e090bd0f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGdyYWRpZW50JTIwYmFja2dyb3VuZHxlbnwxfHx8fDE3NjA2MDkwMDR8MA&ixlib=rb-4.1.0&q=80&w=1080"
           alt="Background"
           className="w-full h-full object-cover opacity-30"
+          loading="eager"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950/90 via-slate-900/90 to-indigo-950/90" />
       </div>
 
-      {/* Animated gradient orbs */}
-      <motion.div
-        className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-500/20 rounded-full blur-3xl"
-        animate={orbAnimationVariants.blue}
-        transition={{
-          duration: 20,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-indigo-500/20 rounded-full blur-3xl"
-        animate={orbAnimationVariants.indigo}
-        transition={{
-          duration: 25,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
+      {/* Animated gradient orbs - optimized with will-change */}
+      {!prefersReducedMotion && (
+        <>
+          <motion.div
+            className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-blue-500/15 rounded-full blur-3xl"
+            style={{ willChange: 'transform' }}
+            animate={orbVariants.blue}
+            transition={{
+              duration: 25,
+              repeat: Infinity,
+              ease: "easeInOut",
+              repeatType: "reverse"
+            }}
+          />
+          <motion.div
+            className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] bg-indigo-500/15 rounded-full blur-3xl"
+            style={{ willChange: 'transform' }}
+            animate={orbVariants.indigo}
+            transition={{
+              duration: 30,
+              repeat: Infinity,
+              ease: "easeInOut",
+              repeatType: "reverse"
+            }}
+          />
+        </>
+      )}
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 text-center py-32">
         <motion.div
@@ -98,24 +113,30 @@ export const Hero = memo(() => {
           className="mb-8 flex justify-center"
         >
           <div className="relative">
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full blur-2xl opacity-50"
-              animate={logoGlowVariants}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
+            {!prefersReducedMotion && (
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full blur-2xl opacity-50"
+                style={{ willChange: 'transform' }}
+                animate={logoGlow}
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  repeatType: "reverse"
+                }}
+              />
+            )}
             <motion.img 
               src={logo} 
               alt="Aureo" 
               className="relative h-20 md:h-28 w-auto"
-              animate={logoFloatVariants}
+              style={!prefersReducedMotion ? { willChange: 'transform' } : undefined}
+              animate={logoFloat}
               transition={{
-                duration: 3,
+                duration: 4,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
+                repeatType: "reverse"
               }}
             />
           </div>

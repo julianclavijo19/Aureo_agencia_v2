@@ -1,0 +1,135 @@
+{
+  "name": "Flujo CORS Completo - Aureo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-post",
+      "name": "Webhook POST",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 240],
+      "webhookId": "formulario-post"
+    },
+    {
+      "parameters": {
+        "httpMethod": "OPTIONS",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-options",
+      "name": "Webhook OPTIONS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 440],
+      "webhookId": "formulario-options"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"¡Gracias por contactarnos! Tu mensaje ha sido recibido correctamente.\",\n  \"data\": {\n    \"nombre\": \"{{ $json.body.nombre_completo }}\",\n    \"email\": \"{{ $json.body.correo_electronico }}\",\n    \"timestamp\": \"{{ $now.toFormat('dd/MM/yyyy HH:mm:ss') }}\"\n  }\n}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS, GET, PUT, DELETE"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization, X-Requested-With, Accept"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-post",
+      "name": "Respuesta POST",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [480, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS, GET, PUT, DELETE"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization, X-Requested-With, Accept"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-options",
+      "name": "Respuesta OPTIONS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [480, 440]
+    }
+  ],
+  "connections": {
+    "Webhook POST": {
+      "main": [
+        [
+          {
+            "node": "Respuesta POST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook OPTIONS": {
+      "main": [
+        [
+          {
+            "node": "Respuesta OPTIONS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
+

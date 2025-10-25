@@ -1,11 +1,12 @@
 import { memo, useRef, useMemo } from 'react';
 import { Sparkles, Target, Users, TrendingUp } from 'lucide-react';
-import { motion, useInView } from 'motion/react';
+import { motion, useInView, useReducedMotion } from 'motion/react';
 import sloganImg from 'figma:asset/09598a89c19f8163269f1b19c45abbf0f0a48602.png';
 
 export const About = memo(() => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.2 });
+  const prefersReducedMotion = useReducedMotion();
 
   const values = useMemo(() => [
     {
@@ -35,7 +36,7 @@ export const About = memo(() => {
   ], []);
 
   return (
-    <section id="about" className="py-32 bg-slate-50 dark:bg-slate-900 overflow-hidden">
+    <section id="about" className="py-32 bg-slate-50 dark:bg-slate-900 overflow-hidden" style={{ contain: 'paint' }}>
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <motion.div
           ref={ref}
@@ -84,29 +85,33 @@ export const About = memo(() => {
               <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent" />
             </div>
             
-            {/* Decorative elements */}
-            <motion.div
-              className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full blur-2xl opacity-60"
-              animate={{
-                scale: [1, 1.2, 1],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
-            <motion.div
-              className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full blur-2xl opacity-60"
-              animate={{
-                scale: [1, 1.3, 1],
-              }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            />
+            {/* Decorative elements - optimized */}
+            {!prefersReducedMotion && (
+              <>
+                <motion.div
+                  className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full blur-2xl opacity-50"
+                  style={{ willChange: 'transform' }}
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{
+                    duration: 6,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    repeatType: "reverse"
+                  }}
+                />
+                <motion.div
+                  className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full blur-2xl opacity-50"
+                  style={{ willChange: 'transform' }}
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{
+                    duration: 7,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    repeatType: "reverse"
+                  }}
+                />
+              </>
+            )}
           </motion.div>
         </motion.div>
 
@@ -115,12 +120,12 @@ export const About = memo(() => {
             const Icon = value.icon;
             return (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
+                key={value.title}
+                initial={{ opacity: 0, y: 30 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
-                whileHover={{ y: -10 }}
-                className="group relative p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-lg dark:shadow-slate-950/50 hover:shadow-2xl dark:hover:shadow-slate-950 transition-all duration-300 border border-gray-100 dark:border-slate-800"
+                transition={{ duration: 0.5, delay: 0.6 + index * 0.08 }}
+                className="group relative p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-lg dark:shadow-slate-950/50 hover:shadow-2xl dark:hover:shadow-slate-950 transition-all duration-300 border border-gray-100 dark:border-slate-800 hover:-translate-y-2"
+                style={{ willChange: isInView ? 'auto' : 'transform, opacity' }}
               >
                 {/* Gradient background on hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${value.color} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`} />
@@ -128,10 +133,10 @@ export const About = memo(() => {
                 <div className={`relative w-14 h-14 bg-gradient-to-br ${value.color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <Icon className="text-white" size={28} />
                 </div>
-                <h3 className="text-gray-900 dark:text-white mb-3 relative">
+                <h3 className="text-gray-900 dark:text-white mb-3 relative text-lg font-semibold">
                   {value.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 relative">
+                <p className="text-gray-600 dark:text-gray-400 relative text-sm leading-relaxed">
                   {value.description}
                 </p>
               </motion.div>

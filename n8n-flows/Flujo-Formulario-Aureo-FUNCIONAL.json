@@ -1,0 +1,144 @@
+{
+  "name": "Formulario Aureo - FUNCIONAL",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS, GET"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "webhook-principal",
+      "name": "Webhook Formulario",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "formulario-contacto"
+    },
+    {
+      "parameters": {
+        "sendTo": "=andresjulian454k@gmail.com",
+        "subject": "=🔔 Nuevo Lead - {{ $json.body.nombre_completo }}",
+        "message": "=<html><body style=\"font-family: Arial;\"><h2>🎯 Nuevo Lead Recibido</h2><p><strong>Nombre:</strong> {{ $json.body.nombre_completo }}</p><p><strong>Email:</strong> {{ $json.body.correo_electronico }}</p><p><strong>Teléfono:</strong> {{ $json.body.numero_telefono }}</p><p><strong>Empresa:</strong> {{ $json.body.nombre_empresa }}</p><p><strong>Proyecto:</strong></p><p>{{ $json.body.proyecto }}</p><hr><p><a href=\"mailto:{{ $json.body.correo_electronico }}\" style=\"background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;\">Responder por Email</a> <a href=\"https://wa.me/{{ $json.body.numero_telefono.replace(/[^0-9]/g, '') }}\" style=\"background: #10b981; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-left: 10px;\">WhatsApp</a></p></body></html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [480, 200],
+      "id": "email-admin",
+      "name": "Email a Admin",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4lJcPKyMRgXp80kV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.correo_electronico }}",
+        "subject": "¡Gracias por contactar a Aureo! 🎉",
+        "message": "=<html><body style=\"font-family: Arial; padding: 20px;\"><h2 style=\"color: #2563eb;\">✨ ¡Gracias por contactarnos!</h2><p>Hola <strong>{{ $json.body.nombre_completo }}</strong>,</p><p>Hemos recibido tu mensaje y nuestro equipo lo está revisando.</p><div style=\"background: #eff6ff; padding: 15px; border-left: 4px solid #2563eb; margin: 20px 0;\"><h3 style=\"color: #1e40af;\">📋 Resumen de tu solicitud</h3><p><strong>Empresa:</strong> {{ $json.body.nombre_empresa }}</p><p><strong>Email:</strong> {{ $json.body.correo_electronico }}</p><p><strong>Teléfono:</strong> {{ $json.body.numero_telefono }}</p></div><p style=\"background: #f9fafb; padding: 15px; border-radius: 5px;\"><strong>Tu mensaje:</strong><br>{{ $json.body.proyecto }}</p><div style=\"background: #fef3c7; padding: 15px; border-radius: 5px; margin: 20px 0;\"><strong>⏰ ¿Qué sigue?</strong><p>Nos pondremos en contacto en las próximas 24-48 horas.</p></div><p style=\"text-align: center;\"><a href=\"https://wa.me/573209392035\" style=\"background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;\">💬 Escríbenos por WhatsApp</a></p><p style=\"text-align: center; color: #6b7280; margin-top: 30px;\">Gracias por confiar en nosotros,<br><strong style=\"color: #2563eb;\">El equipo de Aureo</strong> 🚀</p><hr><p style=\"text-align: center; color: #9ca3af; font-size: 12px;\"><strong>Aureo - Agencia Digital</strong><br>Bogotá, Colombia | 320 9392035</p></body></html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [480, 400],
+      "id": "email-cliente",
+      "name": "Email a Cliente",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4lJcPKyMRgXp80kV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"¡Gracias por contactarnos! Tu mensaje ha sido recibido correctamente.\", \"nombre\": $json.body.nombre_completo, \"email\": $json.body.correo_electronico } }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-success",
+      "name": "Respuesta Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Formulario": {
+      "main": [
+        [
+          {
+            "node": "Email a Admin",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email a Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email a Admin": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email a Cliente": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+

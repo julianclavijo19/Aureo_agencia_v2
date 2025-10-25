@@ -4,6 +4,7 @@ import Lenis from 'lenis';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { Toaster } from './components/ui/sonner';
+import { WhatsAppWidget } from './components/WhatsAppWidget';
 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -117,6 +118,7 @@ export default function App() {
           <Footer />
           <Toaster />
         </div>
+        <WhatsAppWidget />
       </LenisWrapper>
     </BrowserRouter>
   );

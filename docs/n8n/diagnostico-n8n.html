@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Diagnóstico n8n - Aureo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-align: center;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        .diagnostic-item {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .diagnostic-item.checking {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .diagnostic-item.success {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+        .diagnostic-item.error {
+            border-color: #ef4444;
+            background: #fee2e2;
+        }
+        .diagnostic-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .status-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: #e2e8f0;
+        }
+        .success .status-icon {
+            background: #10b981;
+            color: white;
+        }
+        .error .status-icon {
+            background: #ef4444;
+            color: white;
+        }
+        .checking .status-icon {
+            background: #3b82f6;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .diagnostic-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .diagnostic-message {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-left: 44px;
+        }
+        .url-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        .url-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e3a8a 100%);
+            color: white;
+            padding: 14px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 30px;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .summary {
+            background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        .summary h3 {
+            color: #1e40af;
+            margin-bottom: 12px;
+        }
+        .summary ul {
+            list-style: none;
+            padding: 0;
+        }
+        .summary li {
+            padding: 8px 0;
+            color: #1e40af;
+            font-size: 15px;
+        }
+        .summary li::before {
+            content: "→ ";
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .code {
+            background: #1e293b;
+            color: #22d3ee;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico n8n</h1>
+        <p class="subtitle">Verifica automáticamente por qué no funciona tu webhook</p>
+
+        <label for="webhookUrl" style="display: block; color: #64748b; font-weight: 600; margin-bottom: 8px;">
+            URL del Webhook de n8n:
+        </label>
+        <input 
+            type="url" 
+            id="webhookUrl" 
+            class="url-input"
+            value="https://julian454k.app.n8n.cloud/webhook-test/formulario-contacto"
+            placeholder="https://tu-n8n.com/webhook/formulario-contacto"
+        >
+
+        <button onclick="runDiagnostics()" class="btn" id="diagBtn">
+            🚀 Iniciar Diagnóstico
+        </button>
+
+        <div id="diagnostics">
+            <!-- Los items de diagnóstico se insertarán aquí -->
+        </div>
+
+        <div id="summary" style="display: none;"></div>
+    </div>
+
+    <script>
+        const diagnostics = [
+            {
+                id: 'cors',
+                title: 'Verificando CORS',
+                test: async (url) => {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'OPTIONS',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        return {
+                            success: response.status < 400,
+                            message: response.status < 400 
+                                ? '✅ El servidor permite peticiones CORS' 
+                                : '❌ El servidor no permite CORS. Configura Access-Control-Allow-Origin en n8n'
+                        };
+                    } catch (error) {
+                        return {
+                            success: false,
+                            message: `❌ Error de red: ${error.message}`
+                        };
+                    }
+                }
+            },
+            {
+                id: 'webhook-exists',
+                title: 'Verificando si el webhook existe',
+                test: async (url) => {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ test: true })
+                        });
+                        return {
+                            success: response.status !== 404,
+                            message: response.status !== 404
+                                ? '✅ El webhook existe y responde'
+                                : '❌ Webhook no encontrado (404). Verifica la URL'
+                        };
+                    } catch (error) {
+                        return {
+                            success: false,
+                            message: `❌ No se puede conectar: ${error.message}`
+                        };
+                    }
+                }
+            },
+            {
+                id: 'json-format',
+                title: 'Probando envío de datos JSON',
+                test: async (url) => {
+                    try {
+                        const testData = {
+                            nombre_completo: "Test Diagnóstico",
+                            correo_electronico: "test@diagnostico.com",
+                            numero_telefono: "+57 300-000-0000",
+                            nombre_empresa: "Test",
+                            proyecto: "Test diagnóstico automático"
+                        };
+                        
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(testData)
+                        });
+                        
+                        const data = await response.json();
+                        
+                        return {
+                            success: response.ok && data.success,
+                            message: response.ok && data.success
+                                ? `✅ El webhook procesa datos correctamente: ${data.message}`
+                                : `❌ Error al procesar: ${data.message || 'Sin respuesta válida'}`,
+                            data: data
+                        };
+                    } catch (error) {
+                        return {
+                            success: false,
+                            message: `❌ Error al enviar datos: ${error.message}`
+                        };
+                    }
+                }
+            },
+            {
+                id: 'response-format',
+                title: 'Verificando formato de respuesta',
+                test: async (url) => {
+                    try {
+                        const response = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                nombre_completo: "Test",
+                                correo_electronico: "test@test.com",
+                                numero_telefono: "+57 300000000",
+                                nombre_empresa: "Test",
+                                proyecto: "Test"
+                            })
+                        });
+                        
+                        const contentType = response.headers.get('content-type');
+                        const isJson = contentType && contentType.includes('application/json');
+                        
+                        return {
+                            success: isJson,
+                            message: isJson
+                                ? '✅ El webhook devuelve JSON correctamente'
+                                : `❌ El webhook no devuelve JSON (devuelve: ${contentType})`
+                        };
+                    } catch (error) {
+                        return {
+                            success: false,
+                            message: `❌ Error: ${error.message}`
+                        };
+                    }
+                }
+            }
+        ];
+
+        function createDiagnosticItem(diagnostic) {
+            return `
+                <div id="item-${diagnostic.id}" class="diagnostic-item">
+                    <div class="diagnostic-header">
+                        <div class="status-icon">⏱️</div>
+                        <div class="diagnostic-title">${diagnostic.title}</div>
+                    </div>
+                    <div class="diagnostic-message">Esperando...</div>
+                </div>
+            `;
+        }
+
+        async function runDiagnostics() {
+            const url = document.getElementById('webhookUrl').value.trim();
+            const diagBtn = document.getElementById('diagBtn');
+            const diagnosticsDiv = document.getElementById('diagnostics');
+            const summaryDiv = document.getElementById('summary');
+            
+            if (!url) {
+                alert('Por favor ingresa la URL del webhook');
+                return;
+            }
+
+            diagBtn.disabled = true;
+            diagBtn.textContent = '🔄 Diagnosticando...';
+            summaryDiv.style.display = 'none';
+            
+            // Crear items
+            diagnosticsDiv.innerHTML = diagnostics.map(d => createDiagnosticItem(d)).join('');
+            
+            const results = [];
+            
+            // Ejecutar tests
+            for (const diagnostic of diagnostics) {
+                const item = document.getElementById(`item-${diagnostic.id}`);
+                item.className = 'diagnostic-item checking';
+                item.querySelector('.status-icon').textContent = '🔄';
+                item.querySelector('.diagnostic-message').textContent = 'Verificando...';
+                
+                const result = await diagnostic.test(url);
+                results.push({ ...result, title: diagnostic.title });
+                
+                item.className = `diagnostic-item ${result.success ? 'success' : 'error'}`;
+                item.querySelector('.status-icon').textContent = result.success ? '✅' : '❌';
+                item.querySelector('.diagnostic-message').textContent = result.message;
+                
+                if (result.data) {
+                    const dataDiv = document.createElement('div');
+                    dataDiv.className = 'code';
+                    dataDiv.textContent = JSON.stringify(result.data, null, 2);
+                    item.querySelector('.diagnostic-message').appendChild(dataDiv);
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // Mostrar resumen
+            showSummary(results);
+            
+            diagBtn.disabled = false;
+            diagBtn.textContent = '🔄 Ejecutar de Nuevo';
+        }
+
+        function showSummary(results) {
+            const summaryDiv = document.getElementById('summary');
+            const allPassed = results.every(r => r.success);
+            const failedTests = results.filter(r => !r.success);
+            
+            if (allPassed) {
+                summaryDiv.innerHTML = `
+                    <div class="summary" style="border-left-color: #10b981; background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);">
+                        <h3 style="color: #065f46;">🎉 ¡Todas las pruebas pasaron!</h3>
+                        <p style="color: #047857; margin-top: 10px;">
+                            Tu webhook está funcionando correctamente. El formulario debería funcionar sin problemas.
+                        </p>
+                        <ul style="margin-top: 15px;">
+                            <li style="color: #047857;">El formulario web ya puede usarse</li>
+                            <li style="color: #047857;">Los datos se envían correctamente a n8n</li>
+                            <li style="color: #047857;">La respuesta es válida</li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                const solutions = failedTests.map(test => {
+                    if (test.title.includes('CORS')) {
+                        return 'Configura CORS en n8n: Settings > General > CORS Origins > Agrega tu dominio';
+                    } else if (test.title.includes('existe')) {
+                        return 'Verifica la URL del webhook en n8n y cópiala exactamente';
+                    } else if (test.title.includes('JSON')) {
+                        return 'Verifica que el flujo en n8n esté ACTIVO (botón verde)';
+                    } else if (test.title.includes('respuesta')) {
+                        return 'Asegúrate de tener un nodo "Respond to Webhook" que devuelva JSON';
+                    }
+                    return 'Revisa la configuración en n8n';
+                }).filter((v, i, a) => a.indexOf(v) === i);
+                
+                summaryDiv.innerHTML = `
+                    <div class="summary" style="border-left-color: #ef4444; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);">
+                        <h3 style="color: #991b1b;">⚠️ Se encontraron ${failedTests.length} problema(s)</h3>
+                        <p style="color: #991b1b; margin-top: 10px; margin-bottom: 15px;">
+                            <strong>Soluciones recomendadas:</strong>
+                        </p>
+                        <ul>
+                            ${solutions.map(s => `<li style="color: #991b1b;">${s}</li>`).join('')}
+                        </ul>
+                        <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px;">
+                            <strong style="color: #991b1b;">📋 Checklist rápido:</strong>
+                            <ol style="margin-top: 10px; margin-left: 20px; color: #991b1b;">
+                                <li>¿El flujo en n8n está ACTIVO? (botón verde)</li>
+                                <li>¿La URL del webhook es correcta?</li>
+                                <li>¿El flujo tiene un nodo "Respond to Webhook"?</li>
+                                <li>¿Hay errores en n8n > Executions?</li>
+                            </ol>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            summaryDiv.style.display = 'block';
+        }
+
+        // Auto-ejecutar al cargar
+        window.onload = () => {
+            const urlParam = new URLSearchParams(window.location.search).get('url');
+            if (urlParam) {
+                document.getElementById('webhookUrl').value = urlParam;
+                runDiagnostics();
+            }
+        };
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,192 @@
+{
+  "name": "Formulario Aureo - CON CORS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "formulario-contacto"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.headers.method || $json.method }}",
+              "operation": "equals",
+              "value2": "OPTIONS"
+            }
+          ]
+        }
+      },
+      "id": "if-options",
+      "name": "Es OPTIONS?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "OK",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Accept"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-options",
+      "name": "Respuesta OPTIONS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [640, 180]
+    },
+    {
+      "parameters": {
+        "sendTo": "=andresjulian454k@gmail.com",
+        "subject": "=Nuevo Lead - {{ $json.body.nombre_completo }}",
+        "message": "=<html><body><h2>Nuevo Lead</h2><p><strong>Nombre:</strong> {{ $json.body.nombre_completo }}</p><p><strong>Email:</strong> {{ $json.body.correo_electronico }}</p><p><strong>Telefono:</strong> {{ $json.body.numero_telefono }}</p><p><strong>Empresa:</strong> {{ $json.body.nombre_empresa }}</p><p><strong>Proyecto:</strong><br>{{ $json.body.proyecto }}</p></body></html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [640, 420],
+      "id": "email-admin",
+      "name": "Email Admin",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4lJcPKyMRgXp80kV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.correo_electronico }}",
+        "subject": "Gracias por contactarnos",
+        "message": "=<html><body><h2>Gracias por contactarnos</h2><p>Hola {{ $json.body.nombre_completo }},</p><p>Hemos recibido tu mensaje.</p><p>Nos pondremos en contacto pronto.</p><p>Saludos,<br>Equipo Aureo</p></body></html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [840, 420],
+      "id": "email-cliente",
+      "name": "Email Cliente",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4lJcPKyMRgXp80kV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"message\": \"Mensaje recibido\" }",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-post",
+      "name": "Respuesta POST",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1040, 420]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Es OPTIONS?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Es OPTIONS?": {
+      "main": [
+        [
+          {
+            "node": "Respuesta OPTIONS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Admin": {
+      "main": [
+        [
+          {
+            "node": "Email Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Cliente": {
+      "main": [
+        [
+          {
+            "node": "Respuesta POST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+

@@ -1,0 +1,180 @@
+{
+  "name": "Formulario Aureo - CORS Simple",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "OPTIONS",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-options",
+      "name": "Webhook OPTIONS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 180],
+      "webhookId": "formulario-contacto-options"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "formulario-contacto",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-post",
+      "name": "Webhook POST",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 420],
+      "webhookId": "formulario-contacto-post"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 204,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Accept"
+              },
+              {
+                "name": "Access-Control-Max-Age",
+                "value": "86400"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-options",
+      "name": "Respuesta CORS",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 180]
+    },
+    {
+      "parameters": {
+        "sendTo": "=andresjulian454k@gmail.com",
+        "subject": "=Nuevo Lead - {{ $json.body.nombre_completo }}",
+        "message": "=<html><body><h2>Nuevo Lead</h2><p><b>Nombre:</b> {{ $json.body.nombre_completo }}</p><p><b>Email:</b> {{ $json.body.correo_electronico }}</p><p><b>Telefono:</b> {{ $json.body.numero_telefono }}</p><p><b>Empresa:</b> {{ $json.body.nombre_empresa }}</p><p><b>Proyecto:</b><br>{{ $json.body.proyecto }}</p></body></html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [440, 420],
+      "id": "email-admin",
+      "name": "Email Admin",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4lJcPKyMRgXp80kV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.correo_electronico }}",
+        "subject": "Gracias por contactarnos",
+        "message": "=<html><body><h2>Gracias por contactarnos</h2><p>Hola {{ $json.body.nombre_completo }},</p><p>Hemos recibido tu mensaje y nos pondremos en contacto pronto.</p><p>Saludos,<br>Equipo Aureo</p></body></html>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [640, 420],
+      "id": "email-cliente",
+      "name": "Email Cliente",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "4lJcPKyMRgXp80kV",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"success\": true, \"message\": \"Mensaje recibido\" }",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "response-post",
+      "name": "Respuesta Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [840, 420]
+    }
+  ],
+  "connections": {
+    "Webhook OPTIONS": {
+      "main": [
+        [
+          {
+            "node": "Respuesta CORS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook POST": {
+      "main": [
+        [
+          {
+            "node": "Email Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Admin": {
+      "main": [
+        [
+          {
+            "node": "Email Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Cliente": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
+
